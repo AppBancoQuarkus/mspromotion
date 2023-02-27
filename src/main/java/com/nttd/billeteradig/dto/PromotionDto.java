@@ -12,9 +12,17 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PromotionDto {
     
-    private boolean respuesta;
-    private String mensaje;
-    private String iduser;
+    private String title;
+    private String storename;
+    private double amountpay;
+    private double porcentajedescuento;
+    private double amountorigin;
+    private String descriptionpromotion;
+    private String startdate;
+    private String finaldate;    
+    private int stock;
+    private String imageurl;
+    private String state;
 
     
 
@@ -23,9 +31,4 @@ public class PromotionDto {
     }
 
 
-    public PromotionDto(boolean respuesta) {
-        this.respuesta = respuesta;
-    }    
-
-    
 }

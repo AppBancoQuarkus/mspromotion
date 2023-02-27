@@ -1,25 +1,21 @@
 package com.nttd.billeteradig.dto;
 
-import java.io.Serializable;
+import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
-@Data
+@Builder
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PromotionDayDto {
     
-    //private List<PromotionEntity> lista;
-
-    private String value;
-
+    private List<PromotionDto> lista;
 
 }

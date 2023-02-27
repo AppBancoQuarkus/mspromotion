@@ -8,7 +8,6 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import com.nttd.billeteradig.dto.PromotionDayDto;
 import com.nttd.billeteradig.dto.ResponseDto;
 import com.nttd.billeteradig.entity.PromotionEntity;
 import com.nttd.billeteradig.redis.PromotionRedis;
@@ -22,8 +21,6 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class PromotionServiceImpl implements PromotionService {
 
-    // @RestClient
-    // UserApi userApi;
 
     @Inject
     PromotionRedis promotionRedis;
@@ -41,24 +38,38 @@ public class PromotionServiceImpl implements PromotionService {
     String valorInactivo;
 
     @Override
-    public Uni<Object> getTodayPromotion1() {
+    public Uni<ResponseDto> getTodayPromotionRedis() {
         try{
                 return promotionRedis.get().map(objredis -> {
-                        //if (objredis != null)
-                       //     return objredis.getLista();                        
+                        if (objredis != null)
+                           return objredis.getResponse();                        
                         return null;
-                    }).flatMap((res)->{
-                        Uni<List<PromotionEntity>> promoactivo = PromotionEntity
-                        .list("state", valorActivo);
-                        return promoactivo.map(result -> {
-                                List<PromotionEntity> listado = new ArrayList<>();
-                                if (result.size() > 0){
-                                    listado = result;
-                                    PromotionDayDto daypromo = new PromotionDayDto("hola");
-                                    promotionRedis.set(daypromo);
-                                }
-                                return listado;
+                    }).flatMap((respuesta)->{
+                        if(respuesta == null){
+                            Uni<List<PromotionEntity>> promoactivo = PromotionEntity
+                            .list("state", valorActivo);
+                            return promoactivo.map(result -> {
+                                    List<PromotionEntity> lista = new ArrayList<>();
+                                    SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+                                    try {
+                                        Date today = formato.parse(formato.format(new Date()));
+                                        for (PromotionEntity promo : result) {
+                                            Date startdate = formato.parse(promo.getStartdate());
+                                            Date finaldate = formato.parse(promo.getFinaldate());
+                                            if (startdate.getTime() <= today.getTime() && finaldate.getTime() >= today.getTime())
+                                                lista.add(promo);
+                                        }
+                                    } catch (Exception e) {
+                                        System.out.println("::"+e.getMessage());;
+                                    }
+                                return lista;
                             });
+                        }else return Uni.createFrom().item(respuesta);
+
+                    }).flatMap(rsp->{
+                        return promotionRedis.set(new ResponseDto(Response.Status.OK.getStatusCode(), mensajeGeneral, rsp)).flatMap(r->{
+                                    return promotionRedis.get();
+                                }); 
                     });
 
         } catch (Exception e) {

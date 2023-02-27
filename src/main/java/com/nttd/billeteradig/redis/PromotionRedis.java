@@ -1,32 +1,41 @@
 package com.nttd.billeteradig.redis;
 
-import com.nttd.billeteradig.dto.PromotionDayDto;
+import com.nttd.billeteradig.dto.ResponseDto;
 
 import io.quarkus.redis.client.RedisClientName;
 import io.quarkus.redis.datasource.ReactiveRedisDataSource;
 import io.smallrye.mutiny.Uni;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 
-@ApplicationScoped
+@Singleton
 public class PromotionRedis {
 
-    private final String my_key = "promo";
+
     @Inject
     @RedisClientName("promo-day")
     ReactiveRedisDataSource rrds;
 
-    public Uni<PromotionDayDto> get() {
+
+    @ConfigProperty(name = "valor.mykey.redis")
+    String valormykey;
+
+   
+    
+
+    public Uni<ResponseDto> get() {
        
-            return rrds.value(String.class,PromotionDayDto.class).get(my_key);
+            return rrds.value(String.class,ResponseDto.class).get(valormykey);
        
     }
 
-    public Uni<Void> set(PromotionDayDto promotionDayDto) {     
+    public Uni<Void> set(ResponseDto responseDto) {     
                  
-        return rrds.value(String.class,PromotionDayDto.class)
-                   .setex(my_key, 91000, promotionDayDto); 
+        return rrds.value(String.class,ResponseDto.class)
+                   .setex(valormykey, 86400, responseDto); 
                 
     }
  
