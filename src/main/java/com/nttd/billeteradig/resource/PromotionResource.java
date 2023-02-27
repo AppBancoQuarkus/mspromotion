@@ -3,11 +3,13 @@ package com.nttd.billeteradig.resource;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.logging.Logger;
 
+import com.nttd.billeteradig.dto.PromotionDayDto;
 import com.nttd.billeteradig.dto.ResponseDto;
 import com.nttd.billeteradig.entity.PromotionEntity;
-import com.nttd.billeteradig.service.IncrementService;
+import com.nttd.billeteradig.redis.PromotionRedis;
 import com.nttd.billeteradig.service.PromotionService;
 
+import io.quarkus.redis.datasource.ReactiveRedisDataSource;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
@@ -26,25 +28,41 @@ public class PromotionResource {
    PromotionService promotionService;
 
    @Inject
-   IncrementService incrementService;
+   PromotionRedis promotionRedis;
 
-  
+   @Inject
+    ReactiveRedisDataSource reactiveRedisDataSource;
+
    @Inject
    Logger logger;
 
-   @GET
-   @Path("/redis/{key}")
-   @Operation(summary = "Agregando redis del microservicio",description = "Permite agregar redis para este microservicio")
-   public Uni<String> get(@PathParam("key") String key){
-        logger.info("Iniciando el metodo redis get - Resource.");
-        return incrementService.get(key);
-   }
+    @GET
+    @Path("/redis/all")
+    public Uni<PromotionDayDto> getAllRedis(){
+        return promotionRedis.get();
+        // return this.reactiveRedisDataSource
+        // .value(String.class, PromotionDayDto.class)
+        // .set("promo", new PromotionDayDto("ajjajaj"))
+        // .flatMap(r -> {
+        //     return this.reactiveRedisDataSource
+        //             .value(String.class, PromotionDayDto.class)
+        //             .get("promo");
+        // });
+    }
+
+    @POST
+    @Path("/redis/registro")
+    public Uni<PromotionDayDto> setRegistro(PromotionDayDto promotionDayDto){
+        return promotionRedis.set(promotionDayDto).flatMap(r->{
+            return promotionRedis.get();
+        });
+    }
 
     /* Buscar la promocion del dia en la billetera digital */
     @GET
     @Path("/today1")
     @Operation(summary = "Obtener todas las promociones digitales de hoy",description = "Permite obtener todas las promociones digitales de hoy")
-    public Uni<ResponseDto> getTodayPromotion1(){
+    public Uni<Object> getTodayPromotion1(){
          logger.info("Iniciando el metodo getTodayPromotion1 - Resource.");
          return promotionService.getTodayPromotion1();
     }

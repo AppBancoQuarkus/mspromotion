@@ -1,28 +1,37 @@
 package com.nttd.billeteradig.redis;
 
+import com.nttd.billeteradig.dto.PromotionDayDto;
 
-import com.nttd.billeteradig.entity.PromotionEntity;
-
+import io.quarkus.redis.client.RedisClientName;
 import io.quarkus.redis.datasource.ReactiveRedisDataSource;
-import io.quarkus.redis.datasource.value.ReactiveValueCommands;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 
 @ApplicationScoped
 public class PromotionRedis {
 
-    private final ReactiveValueCommands<String, PromotionEntity> commands;
+    private final String my_key = "promo";
+    @Inject
+    @RedisClientName("promo-day")
+    ReactiveRedisDataSource rrds;
 
-    public PromotionRedis(ReactiveRedisDataSource rds) {
-        commands = rds.value(PromotionEntity.class);
+    public Uni<PromotionDayDto> get() {
+       
+            return rrds.value(String.class,PromotionDayDto.class).get(my_key);
+       
     }
 
-    public Uni<PromotionEntity> get(String key) {
-        return commands.get(key);
+    public Uni<Void> set(PromotionDayDto promotionDayDto) {     
+                 
+        return rrds.value(String.class,PromotionDayDto.class)
+                   .setex(my_key, 91000, promotionDayDto); 
+                
     }
-
-    public Uni<Void> setUni(String key, PromotionEntity promotionEntity) {
-        return commands.setex(key, 5, promotionEntity);
-    }
+ 
+      
     
+    
+
 }

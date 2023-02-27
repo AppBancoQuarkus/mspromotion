@@ -7,7 +7,7 @@ import io.smallrye.mutiny.Uni;
 
 public interface PromotionService {
 
-    public Uni<ResponseDto> getTodayPromotion1();
+    public Uni<Object> getTodayPromotion1();
     
     public Uni<ResponseDto> getTodayPromotion();
 
